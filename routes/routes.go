@@ -29,13 +29,16 @@ func Setup(mode string) *gin.Engine {
 	r.LoadHTMLGlob("templates/**/*")
 	r.GET("/", controller.IndexHandler)
 
-	r.Use(middleware.GinBodyMiddleware)
-
-	r.GET("/posts/index", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "posts/index.tmpl", gin.H{
-			"title": "Posts",
+	postGroup := r.Group("/post")
+	{
+		postGroup.Use(middleware.GinBodyMiddleware)
+		postGroup.GET("/index", func(c *gin.Context) {
+			c.HTML(http.StatusOK, "posts/index.tmpl", gin.H{
+				"title": "Posts",
+			})
 		})
-	})
+	}
+
 	r.GET("/users/index", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "users/index.tmpl", gin.H{
 			"title": "Users",

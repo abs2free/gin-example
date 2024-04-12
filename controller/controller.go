@@ -12,5 +12,5 @@ import (
 */
 
 func IndexHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "html/index.tmpl", nil)
+	c.HTML(http.StatusOK, "home/index.tmpl", nil)
 }

@@ -1,11 +1,12 @@
 package middleware
 
 import (
+	"fmt"
 	"net"
 	"net/http"
 	"net/http/httputil"
 	"os"
-	"runtime/debug"
+	"runtime"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -41,11 +42,24 @@ func GinRecovery(stack bool) gin.HandlerFunc {
 				}
 
 				if stack {
-					zap.L().Error("[Recovery from panic]",
-						zap.Any("error", err),
-						zap.String("request", string(httpRequest)),
-						zap.String("stack", string(debug.Stack())),
-					)
+
+					var stacktrace string
+					for i := 1; ; i++ {
+						_, f, l, got := runtime.Caller(i)
+						if !got {
+							break
+						}
+
+						stacktrace += fmt.Sprintf("%s:%d\n", f, l)
+					}
+
+					// when stack finishes
+					logMessage := fmt.Sprintf("Recovered from a route's Handler('%s')\n", c.HandlerName())
+					logMessage += fmt.Sprintf("At Request: %s\n", string(httpRequest))
+					logMessage += fmt.Sprintf("Trace: %s\n", err)
+					logMessage += fmt.Sprintf("\n%s", stacktrace)
+
+					zap.L().Error(logMessage)
 				} else {
 					zap.L().Error("[Recovery from panic]",
 						zap.Any("error", err),
